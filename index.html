@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>东妮英语 · 单词消消乐</title>
+    <style>
+        /* ===== 全局重置 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: #FDF5E6;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 820px;
+            width: 100%;
+            background: rgba(255, 248, 240, 0.7);
+            border-radius: 36px;
+            padding: 20px 16px 18px;
+            box-shadow: 0 16px 48px rgba(180, 140, 100, 0.18);
+            backdrop-filter: blur(4px);
+            text-align: center;
+            position: relative;
+        }
+
+        .container::before {
+            content: '东妮英语';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 80px;
+            font-weight: 900;
+            color: rgba(180, 140, 100, 0.04);
+            letter-spacing: 20px;
+            pointer-events: none;
+            z-index: 0;
+            white-space: nowrap;
+            font-family: 'Comic Sans MS', 'PingFang SC', sans-serif;
+        }
+
+        .title {
+            font-size: clamp(28px, 6vw, 40px);
+            font-weight: 900;
+            color: #6B4F3C;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 12px rgba(180, 140, 100, 0.2);
+            margin-bottom: 12px;
+            font-family: 'Comic Sans MS', 'PingFang SC', sans-serif;
+            position: relative;
+            z-index: 1;
+        }
+        .title span {
+            background: linear-gradient(135deg, #FF8A5C, #E05A3A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px 14px;
+            background: rgba(235, 215, 190, 0.3);
+            padding: 8px 14px;
+            border-radius: 50px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(2px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .player-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .player-group label {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: 700;
+            color: #6B4F3C;
+        }
+        .player-group input {
+            font-size: clamp(18px, 4vw, 24px);
+            padding: 8px 18px;
+            border: 2px solid #DBC8B0;
+            border-radius: 50px;
+            background: rgba(255, 248, 240, 0.85);
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            font-weight: 600;
+            color: #3D2B1F;
+            min-width: 140px;
+            width: 200px;
+            max-width: 240px;
+        }
+        .player-group input:focus {
+            border-color: #F9A66C;
+            box-shadow: 0 0 0 4px rgba(249, 166, 108, 0.2);
+        }
+        .player-group input:disabled {
+            background: #E8DDD0;
+            border-color: #C0B0A0;
+            color: #8A7A6A;
+        }
+
+        .timer-box {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: 700;
+            color: #7A5C44;
+            background: rgba(235, 215, 190, 0.5);
+            padding: 8px 18px;
+            border-radius: 50px;
+            letter-spacing: 2px;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 2px 12px rgba(160, 120, 80, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .timer-box .icon {
+            font-size: clamp(18px, 4vw, 24px);
+        }
+
+        .message {
+            margin: 4px 0 10px 0;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(18px, 4.5vw, 28px);
+            font-weight: 900;
+            color: #5D8A5E;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 16px rgba(93, 138, 94, 0.15);
+            transition: opacity 0.5s ease;
+            opacity: 0;
+            line-height: 1.5;
+            padding: 0 6px;
+            position: relative;
+            z-index: 1;
+        }
+        .message.show {
+            opacity: 1;
+        }
+        .message.win {
+            color: #D48A3A;
+            text-shadow: 0 4px 24px rgba(212, 138, 58, 0.25);
+            animation: win-float 1.2s ease-in-out infinite alternate;
+        }
+        @keyframes win-float {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                transform: translateY(-4px) scale(1.02);
+            }
+        }
+        .message .sub-line {
+            font-size: clamp(16px, 3.8vw, 24px);
+            font-weight: 700;
+            color: #7A5C44;
+            text-shadow: none;
+            margin-top: 2px;
+        }
+        .message .praise {
+            font-size: clamp(18px, 4.2vw, 26px);
+            font-weight: 800;
+            color: #E07040;
+            margin-top: 4px;
+            text-shadow: 0 2px 12px rgba(224, 112, 64, 0.12);
+        }
+
+        .stats-area {
+            margin: 8px 0 4px;
+            padding: 10px 12px 12px;
+            background: rgba(255, 248, 240, 0.4);
+            border-radius: 18px;
+            border: 1px solid rgba(200, 180, 160, 0.12);
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            overflow: visible;
+        }
+        .stats-area .stats-title {
+            font-size: clamp(17px, 3vw, 21px);
+            font-weight: 800;
+            color: #4A3520;
+            text-align: center;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .stats-col {
+            flex: 1;
+            min-width: 140px;
+            background: rgba(255, 248, 240, 0.3);
+            border-radius: 14px;
+            padding: 8px 10px 10px;
+            border: 1px solid rgba(200, 180, 160, 0.08);
+        }
+        .stats-col .col-label {
+            font-size: clamp(13px, 2.2vw, 16px);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            width: 100%;
+        }
+        .stats-col .col-label.perfect {
+            color: #2E7D32;
+            background: rgba(76, 175, 80, 0.10);
+        }
+        .stats-col .col-label.multiple {
+            color: #E65100;
+            background: rgba(255, 152, 0, 0.10);
+        }
+        .stats-col .word-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+        }
+        .stats-col .word-tag {
+            font-size: clamp(13px, 2vw, 16px);
+            font-weight: 600;
+            padding: 1px 10px;
+            border-radius: 30px;
+            background: rgba(255, 248, 240, 0.5);
+            border: 1px solid rgba(200, 180, 160, 0.08);
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .stats-col .word-tag .tag-icon {
+            font-size: 13px;
+        }
+        .stats-col .word-tag .attempt-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: #E65100;
+            background: rgba(255, 152, 0, 0.10);
+            padding: 0 6px;
+            border-radius: 20px;
+        }
+        .stats-col .word-tag.perfect-tag {
+            border-color: rgba(76, 175, 80, 0.15);
+            background: rgba(76, 175, 80, 0.04);
+        }
+        .stats-col .word-tag.multiple-tag {
+            border-color: rgba(255, 152, 0, 0.15);
+            background: rgba(255, 152, 0, 0.04);
+        }
+        .stats-col .empty-hint {
+            font-size: clamp(13px, 2vw, 15px);
+            color: #B0A090;
+            font-weight: 400;
+            padding: 2px 0;
+        }
+
+        .stats-save-hint {
+            text-align: center;
+            font-size: clamp(14px, 2.5vw, 17px);
+            font-weight: 700;
+            color: #D48A3A;
+            background: rgba(212, 138, 58, 0.06);
+            padding: 5px 10px;
+            border-radius: 14px;
+            border: 1px dashed rgba(212, 138, 58, 0.15);
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: clamp(6px, 1.8vw, 14px);
+            margin: 4px 0 12px;
+            justify-items: center;
+            align-items: center;
+            width: 100%;
+            display: none;
+            position: relative;
+            z-index: 1;
+        }
+        .game-grid.visible {
+            display: grid;
+        }
+
+        .bubble {
+            font-family: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: radial-gradient(circle at 30% 30%,
+                    var(--light-color),
+                    var(--main-color) 50%,
+                    var(--dark-color));
+            box-shadow:
+                inset 2px 2px 8px rgba(255, 255, 255, 0.4),
+                inset -2px -4px 8px rgba(0, 0, 0, 0.1),
+                0 4px 12px rgba(0, 0, 0, 0.12);
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 105px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease, opacity 0.35s ease;
+            will-change: transform;
+            touch-action: manipulation;
+            min-width: 0;
+            min-height: 0;
+        }
+
+        .bubble .word {
+            font-family: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            color: #000000;
+            -webkit-text-stroke: 0;
+            text-shadow: none;
+            line-height: 1.2;
+            text-align: center;
+            word-break: keep-all;
+            max-width: 88%;
+            padding: 2px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .bubble.type-zh .word {
+            font-weight: 600;
+            font-size: clamp(18px, 4.2vw, 32px);
+            letter-spacing: 1px;
+        }
+
+        .bubble.type-en .word {
+            font-weight: 700;
+            font-size: clamp(19px, 4.5vw, 34px);
+            letter-spacing: 0.3px;
+        }
+
+        .bubble.speaking {
+            animation: speak-glow 0.9s ease-in-out;
+        }
+        @keyframes speak-glow {
+            0%,
+            100% {
+                box-shadow: inset 2px 2px 8px rgba(255, 255, 255, 0.4), inset -2px -4px 8px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.12);
+            }
+            50% {
+                box-shadow: inset 2px 2px 8px rgba(255, 255, 255, 0.4), inset -2px -4px 8px rgba(0, 0, 0, 0.1), 0 0 30px rgba(255, 200, 50, 0.5), 0 4px 12px rgba(0, 0, 0, 0.12);
+            }
+        }
+
+        .bubble.selected {
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 12px var(--glow-color));
+        }
+
+        .bubble.matched {
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.35s cubic-bezier(0.34, 1.0, 0.64, 0.4), opacity 0.35s ease;
+        }
+
+        .bubble.disabled {
+            cursor: default;
+            filter: saturate(0.6) brightness(0.95);
+            transition: filter 0.4s;
+        }
+        .bubble.disabled:hover {
+            transform: none !important;
+        }
+
+        .bubble.shake {
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0) rotate(0deg);
+            }
+            20% {
+                transform: translateX(-6px) rotate(-3deg);
+            }
+            40% {
+                transform: translateX(6px) rotate(3deg);
+            }
+            60% {
+                transform: translateX(-4px) rotate(-2deg);
+            }
+            80% {
+                transform: translateX(4px) rotate(2deg);
+            }
+        }
+
+        .bubble.match-pop {
+            animation: match-pop 0.45s ease forwards;
+        }
+        @keyframes match-pop {
+            0% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        .controls {
+            margin-top: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-start {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: 800;
+            color: #fff;
+            background: linear-gradient(135deg, #F9A66C, #E07040);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(225, 112, 64, 0.30);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            letter-spacing: 2px;
+            font-family: inherit;
+            touch-action: manipulation;
+            padding: 8px 18px;
+            min-width: 140px;
+            width: 200px;
+            max-width: 240px;
+        }
+        .btn-start:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        .btn-start:disabled {
+            background: #c0b0a0;
+            cursor: not-allowed;
+            box-shadow: 0 4px 16px rgba(180, 160, 140, 0.2);
+            transform: none;
+        }
+
+        .footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(200, 180, 160, 0.15);
+            font-size: clamp(12px, 2vw, 15px);
+            color: #B0A090;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .footer .brand-text {
+            font-weight: 700;
+            background: linear-gradient(135deg, #E07040, #FF8A5C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .footer .divider {
+            color: #D0C0B0;
+        }
+        .footer .copy {
+            font-weight: 400;
+            color: #C0B0A0;
+        }
+        .footer .watermark {
+            font-size: 11px;
+            color: #D0C0B0;
+            letter-spacing: 2px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                padding: 14px 10px 14px;
+                border-radius: 28px;
+            }
+            .title {
+                font-size: 24px;
+            }
+            .top-bar {
+                padding: 6px 10px;
+                gap: 6px 10px;
+            }
+            .player-group input,
+            .btn-start {
+                width: 100%;
+                min-width: unset;
+                max-width: unset;
+                font-size: 16px;
+                padding: 6px 14px;
+            }
+            .timer-box {
+                font-size: 16px;
+                padding: 6px 14px;
+            }
+            .game-grid {
+                gap: 5px;
+            }
+            .bubble.type-zh .word {
+                font-size: 15px;
+            }
+            .bubble.type-en .word {
+                font-size: 16px;
+            }
+            .message {
+                font-size: 16px;
+                min-height: 40px;
+            }
+            .message .sub-line {
+                font-size: 15px;
+            }
+            .message .praise {
+                font-size: 16px;
+            }
+            .container::before {
+                font-size: 40px;
+                letter-spacing: 10px;
+            }
+            .footer {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .stats-area {
+                padding: 6px 8px 8px;
+                margin: 4px 0 2px;
+            }
+            .stats-row {
+                flex-direction: column;
+                gap: 6px;
+            }
+            .stats-col {
+                min-width: unset;
+                padding: 4px 6px 6px;
+            }
+            .stats-col .word-tag {
+                font-size: 12px;
+                padding: 1px 6px;
+            }
+        }
+
+        @media (max-width: 480px) and (min-width: 361px) {
+            .stats-row {
+                flex-direction: column;
+                gap: 6px;
+            }
+            .stats-col {
+                min-width: unset;
+                padding: 6px 8px 8px;
+            }
+            .stats-area {
+                padding: 8px 10px 10px;
+            }
+        }
+
+        @media (min-width: 600px) {
+            .bubble {
+                max-width: 120px;
+            }
+            .game-grid {
+                gap: 16px;
+            }
+        }
+
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            opacity: 0;
+            animation: confetti-fall linear forwards;
+        }
+        @keyframes confetti-fall {
+            0% {
+                opacity: 1;
+                transform: translateY(-20px) rotate(0deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(110vh) rotate(720deg) scale(0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="title">✨ <span>单词消消乐</span> ✨</div>
+
+        <div class="top-bar">
+            <div class="player-group">
+                <label for="playerName">👤</label>
+                <input type="text" id="playerName" placeholder="输入姓名" maxlength="12" autocomplete="off" />
+            </div>
+            <div class="timer-box">
+                <span class="icon">⏱️</span>
+                <span id="timerText">00:00</span>
+            </div>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <div class="game-grid" id="grid"></div>
+
+        <div class="controls">
+            <button class="btn-start" id="startBtn">🎮 开始游戏</button>
+        </div>
+
+        <div class="footer">
+            <span class="brand-text">东妮英语</span>
+            <span class="divider">|</span>
+            <span class="copy">© Doni English</span>
+            <span class="divider">|</span>
+            <span class="watermark">单词消消乐 · 专为英语学习设计</span>
+        </div>
+    </div>
+
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <script>
+        // ============================================================
+        //  数据
+        // ============================================================
+        const WORD_PAIRS = [
+            { en: 'apple', zh: '苹果', id: 0 },
+            { en: 'book', zh: '书', id: 1 },
+            { en: 'cat', zh: '猫', id: 2 },
+            { en: 'egg', zh: '鸡蛋', id: 3 },
+            { en: 'fish', zh: '鱼', id: 4 },
+            { en: 'girl', zh: '女孩', id: 5 },
+            { en: 'hand', zh: '手', id: 6 },
+            { en: 'kite', zh: '风筝', id: 7 },
+            { en: 'milk', zh: '牛奶', id: 8 },
+            { en: 'pen', zh: '钢笔', id: 9 },
+            { en: 'sun', zh: '太阳', id: 10 },
+            { en: 'tree', zh: '树', id: 11 }
+        ];
+
+        const PRAISE_PHRASES = [
+            '太棒了！', '真厉害！', '你真是单词小达人！', '完美挑战！',
+            '记忆力超群！', '了不起！', '你太强了！', '学霸就是你！',
+            '好厉害！', '超级棒！', '无与伦比！', '令人钦佩！',
+            '出类拔萃！', '聪明绝顶！', '再创佳绩！', '无人能敌！'
+        ];
+
+        // ============================================================
+        //  语音合成（双语言支持）
+        // ============================================================
+        let speechSynth = null;
+        let isSpeaking = false;
+
+        function cancelSpeech() {
+            if (speechSynth && speechSynth.speaking) {
+                speechSynth.cancel();
+            }
+            isSpeaking = false;
+            document.querySelectorAll('.bubble.speaking').forEach(el => {
+                el.classList.remove('speaking');
+            });
+        }
+
+        function speakEnglishWord(word) {
+            try {
+                cancelSpeech();
+                speechSynth = window.speechSynthesis;
+                if (!speechSynth) return;
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.6;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+
+                const voices = speechSynth.getVoices();
+                let preferredVoice = voices.find(v =>
+                    v.lang.startsWith('en-US') &&
+                    (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Samantha') || v.name
+                        .includes('Alex'))
+                );
+                if (!preferredVoice) preferredVoice = voices.find(v => v.lang.startsWith('en-US'));
+                if (preferredVoice) utterance.voice = preferredVoice;
+
+                isSpeaking = true;
+                utterance.onend = function() {
+                    isSpeaking = false;
+                    document.querySelectorAll('.bubble.speaking').forEach(el => el.classList.remove('speaking'));
+                };
+                utterance.onerror = function() {
+                    isSpeaking = false;
+                    document.querySelectorAll('.bubble.speaking').forEach(el => el.classList.remove('speaking'));
+                };
+                speechSynth.speak(utterance);
+
+                document.querySelectorAll('.bubble.type-en.selected').forEach(el => el.classList.add('speaking'));
+            } catch (e) { console.warn(e); }
+        }
+
+        function speakChineseWord(word) {
+            try {
+                cancelSpeech();
+                speechSynth = window.speechSynthesis;
+                if (!speechSynth) return;
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.7;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+
+                const voices = speechSynth.getVoices();
+                let preferredVoice = voices.find(v =>
+                    v.lang.startsWith('zh') &&
+                    (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Ting-Ting') || v.name
+                        .includes('Yunyang'))
+                );
+                if (!preferredVoice) preferredVoice = voices.find(v => v.lang.startsWith('zh'));
+                if (preferredVoice) utterance.voice = preferredVoice;
+
+                isSpeaking = true;
+                utterance.onend = function() {
+                    isSpeaking = false;
+                    document.querySelectorAll('.bubble.speaking').forEach(el => el.classList.remove('speaking'));
+                };
+                utterance.onerror = function() {
+                    isSpeaking = false;
+                    document.querySelectorAll('.bubble.speaking').forEach(el => el.classList.remove('speaking'));
+                };
+                speechSynth.speak(utterance);
+
+                document.querySelectorAll('.bubble.type-zh.selected').forEach(el => el.classList.add('speaking'));
+            } catch (e) { console.warn(e); }
+        }
+
+        function preloadSpeech() {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.getVoices();
+                if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                    window.speechSynthesis.onvoiceschanged = function() {
+                        window.speechSynthesis.getVoices();
+                    };
+                }
+            }
+        }
+
+        // ============================================================
+        //  颜色生成
+        // ============================================================
+        function getColorForType(type) {
+            let hue, sat, lig;
+            if (type === 'en') {
+                hue = 180 + Math.random() * 100;
+                sat = 60 + Math.random() * 25;
+                lig = 65 + Math.random() * 15;
+            } else {
+                if (Math.random() < 0.7) {
+                    hue = Math.random() * 60;
+                } else {
+                    hue = 300 + Math.random() * 60;
+                }
+                sat = 60 + Math.random() * 25;
+                lig = 65 + Math.random() * 15;
+            }
+            return `hsl(${hue}, ${sat}%, ${lig}%)`;
+        }
+
+        function adjustLightness(hslStr, amount) {
+            try {
+                const match = hslStr.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+                if (!match) return hslStr;
+                const h = parseInt(match[1]);
+                const s = parseInt(match[2]);
+                const l = Math.max(0, Math.min(100, parseInt(match[3]) + amount));
+                return `hsl(${h}, ${s}%, ${l}%)`;
+            } catch (_) { return hslStr; }
+        }
+
+        // ============================================================
+        //  状态
+        // ============================================================
+        let bubbles = [];
+        let selectedIndex = null;
+        let matchedIds = new Set();
+        let isPlaying = false;
+        let isFinished = false;
+        let isProcessing = false;
+        let gameStarted = false;
+        let playerName = '';
+        let wordStats = {};
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+        let startTime = null;
+
+        const grid = document.getElementById('grid');
+        const startBtn = document.getElementById('startBtn');
+        const playerInput = document.getElementById('playerName');
+        const messageEl = document.getElementById('message');
+        const timerText = document.getElementById('timerText');
+        const confettiContainer = document.getElementById('confettiContainer');
+
+        // ============================================================
+        //  音效 (Web Audio API)
+        // ============================================================
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioCtx;
+        }
+
+        document.addEventListener('touchstart', function() {
+            getAudioContext();
+        }, { once: true });
+
+        function playTone(freq, dur, type = 'sine', vol = 0.16) {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + dur);
+            } catch (_) {}
+        }
+
+        // 匹配成功音效 - 已禁用
+        // function playMatchSound() { ... }
+
+        function playErrorSound() {
+            setTimeout(() => playTone(400, 0.16, 'sawtooth', 0.10), 0);
+            setTimeout(() => playTone(300, 0.20, 'sawtooth', 0.10), 160);
+        }
+
+        function playWinSound() {
+            const melody = [523, 587, 659, 784, 880, 784, 880, 988];
+            const durations = [0.10, 0.10, 0.10, 0.16, 0.14, 0.10, 0.10, 0.22];
+            let t = 0;
+            melody.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, durations[i], 'sine', 0.13 + i * 0.005), t * 1000);
+                t += durations[i] + 0.02;
+            });
+        }
+
+        // 碰撞音效 - 已禁用
+        // function playCollisionSound() { ... }
+
+        // ============================================================
+        //  计时器
+        // ============================================================
+        function updateTimerDisplay(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            timerText.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            elapsedSeconds = 0;
+            updateTimerDisplay(0);
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                if (startTime) {
+                    elapsedSeconds = (Date.now() - startTime) / 1000;
+                    updateTimerDisplay(elapsedSeconds);
+                }
+            }, 300);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            if (startTime) {
+                elapsedSeconds = (Date.now() - startTime) / 1000;
+                updateTimerDisplay(elapsedSeconds);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            elapsedSeconds = 0;
+            startTime = null;
+            updateTimerDisplay(0);
+        }
+
+        // ============================================================
+        //  游戏逻辑
+        // ============================================================
+
+        function initWordStats() {
+            wordStats = {};
+            WORD_PAIRS.forEach(pair => {
+                wordStats[pair.id] = {
+                    attempts: 0,
+                    en: pair.en,
+                    zh: pair.zh,
+                    success: false,
+                    matched: false
+                };
+            });
+        }
+
+        function initBubbleData() {
+            const items = [];
+            WORD_PAIRS.forEach(pair => {
+                const enColor = getColorForType('en');
+                items.push({
+                    text: pair.en,
+                    pairId: pair.id,
+                    type: 'en',
+                    color: enColor
+                });
+                const zhColor = getColorForType('zh');
+                items.push({
+                    text: pair.zh,
+                    pairId: pair.id,
+                    type: 'zh',
+                    color: zhColor
+                });
+            });
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
+            }
+            return items;
+        }
+
+        function renderBubbles(data) {
+            grid.innerHTML = '';
+            data.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `bubble type-${item.type}`;
+                div.dataset.index = index;
+                div.dataset.pairId = item.pairId;
+                div.dataset.type = item.type;
+
+                const mainColor = item.color;
+                const lightColor = adjustLightness(mainColor, 18);
+                const darkColor = adjustLightness(mainColor, -15);
+                div.style.setProperty('--main-color', mainColor);
+                div.style.setProperty('--light-color', lightColor);
+                div.style.setProperty('--dark-color', darkColor);
+                div.style.setProperty('--glow-color', 'rgba(255, 215, 0, 0.7)');
+
+                const wordSpan = document.createElement('span');
+                wordSpan.className = 'word';
+                wordSpan.textContent = item.text;
+                div.appendChild(wordSpan);
+
+                if (matchedIds.has(item.pairId)) {
+                    div.classList.add('matched');
+                }
+
+                div.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    onBubbleClick(index);
+                });
+                div.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    onBubbleClick(index);
+                });
+
+                grid.appendChild(div);
+            });
+            bubbles = data;
+        }
+
+        function getBubbleEl(index) {
+            return grid.children[index];
+        }
+
+        // ============================================================
+        //  点击处理 - 两个泡泡都发音，匹配成功无音效
+        // ============================================================
+        function onBubbleClick(index) {
+            if (!isPlaying || isProcessing || isFinished) return;
+            if (matchedIds.has(bubbles[index].pairId)) return;
+            if (selectedIndex === index) {
+                deselectBubble();
+                return;
+            }
+
+            const current = getBubbleEl(index);
+            if (!current || current.classList.contains('matched')) return;
+
+            if (selectedIndex === null) {
+                selectBubble(index);
+                return;
+            }
+
+            // ---- 已有选中：先播放当前点击的语音，再执行配对 ----
+            const currentData = bubbles[index];
+            if (currentData.type === 'en') {
+                speakEnglishWord(currentData.text);
+            } else if (currentData.type === 'zh') {
+                speakChineseWord(currentData.text);
+            }
+
+            // 执行配对逻辑（不取消语音，让语音自然播放）
+            const firstIdx = selectedIndex;
+            const firstEl = getBubbleEl(firstIdx);
+            const firstData = bubbles[firstIdx];
+            const secondData = bubbles[index];
+
+            const isMatch = (firstData.pairId === secondData.pairId) &&
+                (firstData.type !== secondData.type);
+
+            if (isMatch) {
+                // 配对成功 - 不播放音效，只保留单词读音
+                isProcessing = true;
+                const pairId = firstData.pairId;
+                if (wordStats[pairId]) {
+                    wordStats[pairId].attempts++;
+                    wordStats[pairId].success = true;
+                    wordStats[pairId].matched = true;
+                }
+
+                // 匹配成功不播放音效，让单词读音清晰可辨
+
+                matchedIds.add(pairId);
+                const secondEl = getBubbleEl(index);
+                firstEl.classList.remove('selected');
+                firstEl.classList.remove('speaking');
+                secondEl.classList.remove('speaking');
+                firstEl.classList.add('match-pop');
+                secondEl.classList.add('match-pop');
+                setTimeout(() => {
+                    firstEl.classList.add('matched');
+                    secondEl.classList.add('matched');
+                    selectedIndex = null;
+                    isProcessing = false;
+                    if (matchedIds.size === WORD_PAIRS.length) {
+                        gameWin();
+                    }
+                }, 450);
+            } else {
+                // 配对失败 - 保留错误音效
+                isProcessing = true;
+                const pairId = firstData.pairId;
+                if (wordStats[pairId]) {
+                    wordStats[pairId].attempts++;
+                }
+
+                playErrorSound();
+                firstEl.classList.remove('selected');
+                firstEl.classList.remove('speaking');
+                firstEl.classList.add('shake');
+                const secondEl = getBubbleEl(index);
+                secondEl.classList.remove('speaking');
+                secondEl.classList.add('shake');
+
+                setTimeout(() => {
+                    firstEl.classList.remove('shake');
+                    secondEl.classList.remove('shake');
+                    selectedIndex = null;
+                    isProcessing = false;
+                }, 420);
+            }
+        }
+
+        function selectBubble(index) {
+            if (selectedIndex !== null) return;
+            const el = getBubbleEl(index);
+            if (!el || el.classList.contains('matched')) return;
+
+            el.classList.add('selected');
+            selectedIndex = index;
+
+            const data = bubbles[index];
+            if (data.type === 'en') {
+                speakEnglishWord(data.text);
+            } else if (data.type === 'zh') {
+                speakChineseWord(data.text);
+            }
+        }
+
+        function deselectBubble() {
+            if (selectedIndex === null) return;
+            const el = getBubbleEl(selectedIndex);
+            if (el) {
+                el.classList.remove('selected');
+                el.classList.remove('speaking');
+            }
+            selectedIndex = null;
+        }
+
+        // ============================================================
+        //  游戏胜利
+        // ============================================================
+        function gameWin() {
+            isFinished = true;
+            isPlaying = false;
+            stopTimer();
+            cancelSpeech();
+
+            const totalSec = Math.floor(elapsedSeconds);
+            const mins = Math.floor(totalSec / 60);
+            const secs = totalSec % 60;
+            const timeStr = mins > 0 ? `${mins}分${secs}秒` : `${secs}秒`;
+
+            const praise = PRAISE_PHRASES[Math.floor(Math.random() * PRAISE_PHRASES.length)];
+
+            const perfectWords = [];
+            const multipleWords = [];
+
+            WORD_PAIRS.forEach(pair => {
+                const stat = wordStats[pair.id];
+                if (!stat) return;
+                if (stat.success && stat.attempts === 1) {
+                    perfectWords.push({ en: pair.en, zh: pair.zh, attempts: stat.attempts });
+                } else if (stat.success && stat.attempts > 1) {
+                    multipleWords.push({ en: pair.en, zh: pair.zh, attempts: stat.attempts });
+                } else if (stat.success) {
+                    multipleWords.push({ en: pair.en, zh: pair.zh, attempts: stat.attempts });
+                }
+            });
+
+            let perfectHTML = '';
+            if (perfectWords.length > 0) {
+                perfectHTML = perfectWords.map(w =>
+                    `<span class="word-tag perfect-tag"><span class="tag-icon">✅</span> ${w.en}</span>`
+                ).join('');
+            } else {
+                perfectHTML = `<span class="empty-hint">暂无</span>`;
+            }
+
+            let multipleHTML = '';
+            if (multipleWords.length > 0) {
+                multipleHTML = multipleWords.map(w =>
+                    `<span class="word-tag multiple-tag"><span class="tag-icon">🔄</span> ${w.en}<span class="attempt-badge">${w.attempts}次</span></span>`
+                ).join('');
+            } else {
+                multipleHTML = `<span class="empty-hint">暂无</span>`;
+            }
+
+            messageEl.innerHTML = `
+                    <div>🎉 恭喜你，${playerName}，挑战成功！ 🎉</div>
+                    <div class="sub-line">⏱️ 用时 ${timeStr}</div>
+                    <div class="praise">✨ ${praise} ✨</div>
+                    <div class="stats-area">
+                        <div class="stats-title">📊 单词配对统计</div>
+                        <div class="stats-row">
+                            <div class="stats-col">
+                                <div class="col-label perfect">✅ 一次性成功（${perfectWords.length}个）</div>
+                                <div class="word-tags">${perfectHTML}</div>
+                            </div>
+                            <div class="stats-col">
+                                <div class="col-label multiple">🔄 多次尝试（${multipleWords.length}个）</div>
+                                <div class="word-tags">${multipleHTML}</div>
+                            </div>
+                        </div>
+                        <div class="stats-save-hint">📸 请截图保存，复习这些单词吧！</div>
+                    </div>
+                `;
+            messageEl.className = 'message show win';
+            playWinSound();
+            launchConfetti();
+
+            startBtn.textContent = '🔄 再来一局';
+            startBtn.disabled = false;
+            playerInput.disabled = false;
+        }
+
+        function launchConfetti() {
+            const container = confettiContainer;
+            container.innerHTML = '';
+            const colors = ['#FFB7B7', '#FFD4A8', '#FDFD96', '#B5EAD7', '#A8D8EA', '#D4A5E0',
+                '#FF9AA2', '#FFB3B3', '#FFDAC1', '#E2F0CB', '#B5D8EB', '#C7CEEA'
+            ];
+            for (let i = 0; i < 60; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti';
+                const size = 6 + Math.random() * 10;
+                const left = Math.random() * 100;
+                const delay = Math.random() * 1.8;
+                const duration = 2.0 + Math.random() * 2.5;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                el.style.cssText = `
+                        left: ${left}%;
+                        width: ${size}px;
+                        height: ${size * (0.5 + Math.random())}px;
+                        background: ${color};
+                        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+                        animation-delay: ${delay}s;
+                        animation-duration: ${duration}s;
+                        transform: rotate(${Math.random() * 360}deg);
+                    `;
+                container.appendChild(el);
+            }
+            setTimeout(() => { container.innerHTML = ''; }, 5000);
+        }
+
+        function startGame() {
+            const name = playerInput.value.trim();
+            if (!name) {
+                alert('请先输入你的姓名！');
+                playerInput.focus();
+                return;
+            }
+            playerName = name;
+
+            cancelSpeech();
+
+            matchedIds.clear();
+            selectedIndex = null;
+            isProcessing = false;
+            isFinished = false;
+            messageEl.className = 'message';
+            messageEl.textContent = '';
+            confettiContainer.innerHTML = '';
+            resetTimer();
+
+            initWordStats();
+
+            const newData = initBubbleData();
+            renderBubbles(newData);
+            grid.classList.add('visible');
+
+            isPlaying = true;
+            gameStarted = true;
+            startBtn.textContent = '⏳ 游戏中...';
+            startBtn.disabled = true;
+            playerInput.disabled = true;
+
+            startTimer();
+        }
+
+        function resetGame() {
+            if (isPlaying && !isFinished) {}
+            grid.classList.remove('visible');
+            grid.innerHTML = '';
+            initWordStats();
+            startGame();
+        }
+
+        // ============================================================
+        //  事件绑定
+        // ============================================================
+        startBtn.addEventListener('click', () => {
+            if (startBtn.textContent === '🔄 再来一局' || startBtn.textContent === '🎮 开始游戏') {
+                resetGame();
+            }
+        });
+
+        playerInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                startBtn.click();
+            }
+        });
+
+        // ============================================================
+        //  初始化
+        // ============================================================
+        function init() {
+            grid.classList.remove('visible');
+            grid.innerHTML = '';
+
+            isPlaying = false;
+            gameStarted = false;
+            startBtn.textContent = '🎮 开始游戏';
+            startBtn.disabled = false;
+            playerInput.disabled = false;
+            playerInput.value = '';
+            messageEl.className = 'message show';
+            messageEl.innerHTML = '💡 输入姓名，点击「开始游戏」挑战吧！';
+            resetTimer();
+            initWordStats();
+
+            preloadSpeech();
+
+            document.addEventListener('click', function() {
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.getVoices();
+                }
+            }, { once: true });
+
+            document.addEventListener('touchstart', function() {
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.getVoices();
+                }
+            }, { once: true });
+        }
+
+        init();
+
+        document.addEventListener('click', () => {
+            getAudioContext();
+        }, { once: true });
+
+        console.log('🎯 东妮英语 · 单词消消乐已加载！');
+        console.log('🔊 点击英文泡泡 → 英文发音（慢速），点击中文泡泡 → 中文发音（标准普通话）');
+        console.log('🔇 匹配正确时取消音效，确保单词读音清晰可辨');
+    </script>
+</body>
+</html>
